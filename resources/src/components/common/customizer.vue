@@ -1,9 +1,9 @@
 <template>
   <div>
     <div class="customizer" :class="{ open: isOpen }">
-      <div class="handle" @click="isOpen = !isOpen">
+      <!-- <div class="handle" @click="isOpen = !isOpen">
         <i class="i-Gear spin"></i>
-      </div>
+      </div> -->
 
       <vue-perfect-scrollbar
         :settings="{ suppressScrollX: true, wheelPropagation: false }"

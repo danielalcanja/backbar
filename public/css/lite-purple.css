@@ -21110,19 +21110,32 @@ a.text-gray-900:focus {
   background: #64748b;
 }
 
-/*
-$full-map: (
-  blue: (
-    100: #f31312,
-    .....,
-    900: #f32332
-  ),
-  red: (
-    100: #f31312,
-    .....,
-    900: #f32332
-  )
-)
+/*
+
+$full-map: (
+
+  blue: (
+
+    100: #f31312,
+
+    .....,
+
+    900: #f32332
+
+  ),
+
+  red: (
+
+    100: #f31312,
+
+    .....,
+
+    900: #f32332
+
+  )
+
+)
+
 */
 
 .blue-50 {
@@ -27655,7 +27668,8 @@ a.typo_link.text-gray-900:after {
 }
 
 .layout-sidebar-compact.sidenav-open .main-content-wrap {
-  width: calc( 100% - 76px - 220px);
+  width: calc(
+ 100% - 76px - 220px);
 }
 
 .layout-sidebar-compact.sidenav-open .sidebar-left {
@@ -27905,7 +27919,8 @@ a.typo_link.text-gray-900:after {
 .layout-sidebar-compact .sidebar-overlay {
   display: none;
   position: fixed;
-  width: calc( 100% - 76px - 220px);
+  width: calc(
+ 100% - 76px - 220px);
   height: calc(100vh - 80px);
   bottom: 0;
   right: 0;
@@ -28083,8 +28098,8 @@ a.typo_link.text-gray-900:after {
 }
 
 .layout-sidebar-large .main-header .logo img {
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   margin: 0 auto;
   display: block;
 }
@@ -28450,7 +28465,8 @@ a.typo_link.text-gray-900:after {
 .layout-sidebar-large .sidebar-overlay {
   display: none;
   position: fixed;
-  width: calc( 100% - 120px - 220px);
+  width: calc(
+ 100% - 120px - 220px);
   height: calc(100vh - 80px);
   bottom: 0;
   right: 0;
@@ -36409,7 +36425,8 @@ th.line-numbers {
   }
 }
 
-/* Media Queries
+/* Media Queries
+
 --------------------------------------------- */
 
 @media only screen and (max-width: 768px) {
