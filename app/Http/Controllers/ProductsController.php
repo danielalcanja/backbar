@@ -1709,9 +1709,9 @@ class ProductsController extends BaseController
                         'cost' => trim($fields[4]),
                         'price' => trim($fields[5]),
                         'external_id' => trim($fields[6]),
-                        'product_record_id' => trim($fields[7]),
+                        'productrecordid' => trim($fields[7]),
                     ];
-                    // $cleanedData[] = $cleanedRow;
+                    $cleanedData[] = $cleanedRow;
                 }
                 $cleanedData[] = $cleanedRow;
             }
@@ -1719,14 +1719,14 @@ class ProductsController extends BaseController
             $rules = [];
             foreach ($cleanedData as $index => $row) {
                 $rules[$index . '.name'] = 'required';
-                // $rules[$index . '.code'] = [
-                //     'required',
-                //     Rule::unique('products', 'code')->where(function ($query) {
-                //         return $query->where('deleted_at', '=', null);
-                //     }),
-                // ];
+                $rules[$index . '.code'] = [
+                    'required',
+                    Rule::unique('products', 'code')->where(function ($query) {
+                        return $query->where('deleted_at', '=', null);
+                    }),
+                ];
             }
-
+            
             $validator = validator()->make($cleanedData, $rules);
         
             if ($validator->fails()) {
@@ -1737,11 +1737,10 @@ class ProductsController extends BaseController
                     'status' => false,
                 ]);
             }
-          
+           
             try {
-                // \DB::transaction(function () use ($cleanedData , $warehouses) {
+                \DB::transaction(function () use ($cleanedData , $warehouses) {
 
-                    
                     //-- Create New Product
                     foreach ($cleanedData as $key => $value) {
 
@@ -1760,11 +1759,14 @@ class ProductsController extends BaseController
                             $brand_id = NULL; 
                         }
                         
-                       
+                        $exProduct = Product::where('code', $value['code'])
+                        ->where('deleted_at', null)
+                        ->first();
                       
+                        if (!$exProduct) {
                         $Product = new Product;
                         $Product->name = htmlspecialchars(trim($value['name']));;
-                        $Product->code = $this->check_code_exist($value['code']);
+                        $Product->code = $value['code'];
                         $Product->Type_barcode = $code;
                         $Product->type = 'is_service';
                         $Product->price = str_replace(",","",$value['price']);
@@ -1774,12 +1776,12 @@ class ProductsController extends BaseController
                         $Product->TaxNet = 0;
                         $Product->tax_method = 1;
                         $Product->external_id = $value['external_id'] ? $value['external_id'] : '';
-                        $Product->product_record_id = $value['product_record_id'] ? $value['product_record_id'] : '';
+                        $Product->product_record_id = $value['productrecordid'] ? $value['productrecordid'] : '';
                         $Product->stock_alert = 0;
                         $Product->is_variant = 0;
                         $Product->image = 'no-image.png';
                         $Product->save();
-                      
+                        }
                         if ($warehouses) {
                             foreach ($warehouses as $warehouse) {
                                 $product_warehouse = new product_warehouse;
@@ -1793,7 +1795,7 @@ class ProductsController extends BaseController
                     }
                     
 
-                // }, 10);
+                }, 10);
                 
                 // Return success response
                 return response()->json(['status' => true]);
