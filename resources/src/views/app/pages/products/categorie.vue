@@ -35,6 +35,14 @@
         </div>
         <div slot="table-actions" class="mt-2 mb-3">
           <b-button
+            @click="Show_import_category()"
+            size="sm"
+            variant="info m-1"
+            >
+            <i class="i-Download"></i>
+            {{ $t("import") }}
+          </b-button>
+          <b-button
             @click="New_category()"
             class="btn-rounded"
             variant="btn btn-primary btn-icon m-1"
@@ -112,6 +120,46 @@
         </b-form>
       </b-modal>
     </validation-observer>
+    <!-- Modal Show Import Category -->
+    <b-modal
+        ok-only
+        ok-title="Cancel"
+        size="md"
+        id="importCategory"
+        :title="$t('import')"
+      >
+        <b-form @submit.prevent="Submit_import" enctype="multipart/form-data">
+          <b-row>
+            <!-- File -->
+            <b-col md="12" sm="12" class="mb-3">
+              <b-form-group>
+                <input type="file" @change="onFileSelected" label="Choose File">
+                <b-form-invalid-feedback
+                  id="File-feedback"
+                  class="d-block"
+                >{{$t('field_must_be_in_csv_format')}}</b-form-invalid-feedback>
+              </b-form-group>
+            </b-col>
+
+             <b-col md="6" sm="12">
+            <b-button type="submit" variant="primary" :disabled="ImportProcessing" size="sm" block>{{ $t("submit") }}</b-button>
+              <div v-once class="typo__p" v-if="ImportProcessing">
+                <div class="spinner sm spinner-primary mt-3"></div>
+              </div>
+          </b-col>
+
+            <b-col md="6" sm="12">
+              <a
+                :href="'/import/exemples/import_products.csv'"
+                class="btn btn-info btn-sm btn-block"
+                
+              >{{ $t("Download_exemple") }}</a>
+            </b-col>
+
+           
+          </b-row>
+        </b-form>
+      </b-modal>
   </div>
 </template>
 
@@ -127,6 +175,8 @@ export default {
     return {
       isLoading: true,
       SubmitProcessing:false,
+      data: new FormData(),
+      import_products: "",
       serverParams: {
         columnFilters: {},
         sort: {
@@ -181,6 +231,86 @@ export default {
     //---- update Params Table
     updateParams(newProps) {
       this.serverParams = Object.assign({}, this.serverParams, newProps);
+    },
+
+    //----------------------------------- Show import Excel -------------------------------\\
+    Show_import_category() {
+      this.$bvModal.show("importCategory");
+    },
+    //------------------------------ Event Import  -------------------------------\\
+    onFileSelected(e) {
+      this.import_products = "";
+      let file = e.target.files[0];
+      let errorFilesize;
+
+      if (file["size"] < 1048576) {
+        // 1 mega = 1,048,576 Bytes
+        errorFilesize = false;
+      } else {
+        this.makeToast(
+          "danger",
+          this.$t("file_size_must_be_less_than_1_mega"),
+          this.$t("Failed")
+        );
+      }
+
+      if (errorFilesize === false) {
+        this.import_products = file;
+      }
+    },
+
+     //----------------------------------------Submit  import Category-----------------\\
+     Submit_import() {
+      // Start the progress bar. 
+      NProgress.start();
+      NProgress.set(0.1);
+      var self = this;
+      self.ImportProcessing = true;
+      self.data.append("products", self.import_products);
+      axios
+        .post("categories/import/csv", self.data)
+        .then(response => {
+          self.ImportProcessing = false;
+          if (response.data.status === true) {
+            this.makeToast(
+              "success",
+              this.$t("Successfully_Imported"),
+              this.$t("Success")
+            );
+            Fire.$emit("Event_import");
+          } else if (response.data.status === false) {
+            this.makeToast(
+              "danger",
+              this.$t("field_must_be_in_csv_format"),
+              this.$t("Failed")
+            );
+          }
+          // Complete the animation of theprogress bar.
+          NProgress.done();
+        })
+        .catch(error => {
+          self.ImportProcessing = false;
+          // Complete the animation of theprogress bar.
+          NProgress.done();
+          if (error.response && error.response.status === 422) {
+              var errors = error.response.data.errors;
+
+               this.makeToast(
+                "danger",
+                errors,
+                this.$t("Failed")
+              );
+
+              // Display validation errors to user
+            } else {
+               this.makeToast(
+              "danger",
+              this.$t("Please_follow_the_import_instructions"),
+              this.$t("Failed")
+            );
+            }
+         
+        });
     },
 
     //---- Event Page Change
@@ -403,6 +533,7 @@ export default {
       });
     },
 
+   
     //---- Delete category by selection
 
     delete_by_selected() {
@@ -462,6 +593,13 @@ export default {
     Fire.$on("Delete_Category", () => {
       setTimeout(() => {
         this.Get_Categories(this.serverParams.page);
+      }, 500);
+    });
+
+    Fire.$on("Event_import", () => {
+      setTimeout(() => {
+        this.Get_Products(this.serverParams.page);
+        this.$bvModal.hide("importCategory");
       }, 500);
     });
   }
